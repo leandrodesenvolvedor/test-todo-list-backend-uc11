@@ -1,0 +1,10 @@
+# Normaliza o fim de linha em qualquer sistema operacional.
+#
+# Sem esta declaração, o Git avisa a cada commit que vai converter LF em CRLF
+# no Windows — vinte e três linhas de aviso no primeiro commit — e o mesmo
+# arquivo passa a ter conteúdo diferente dependendo de quem o baixou, o que
+# polui o diff de quem trabalha em outro sistema.
+#
+# `text=auto` deixa o Git tratar os arquivos como texto; `eol=lf` fixa o fim de
+# linha em LF tanto no repositório quanto na cópia de trabalho.
+* text=auto eol=lf

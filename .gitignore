@@ -1,0 +1,21 @@
+.env
+venv/
+__pycache__/
+*.pyc
+.vscode/
+
+# Cache do pytest, recriado a cada execução da suíte
+.pytest_cache/
+
+# Dados brutos da medição de cobertura (`pytest --cov`), regerados a cada
+# execução. O relatório é efêmero de propósito: o que vale é o número da
+# execução de agora, não o de uma rodada antiga que alguém comitou.
+.coverage
+.coverage.*
+htmlcov/
+
+# Banco de desenvolvimento em SQLite — é arquivo de trabalho local, nunca
+# versionado. Cada pessoa tem o seu, com os seus dados de teste.
+*.db
+*.db-journal
+*.sqlite3
