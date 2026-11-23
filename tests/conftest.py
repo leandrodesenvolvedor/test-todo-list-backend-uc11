@@ -1,30 +1,14 @@
-"""Configuração comum dos testes. 
-  
-O pytest encontra este arquivo sozinho e aplica o que há nele a **todos** os 
-testes da pasta — não é preciso importá-lo em lugar nenhum. É isso que faz dele 
-o lugar das fixtures compartilhadas. 
-""" 
-  
-import os 
-  
-# As variáveis de ambiente são definidas **antes** de importar a aplicação, e a 
-# ordem é o que importa aqui: a configuração é carregada na primeira importação 
-# e fica em cache. Definir depois do import não teria efeito nenhum. 
-# 
-# `sqlite://` sem caminho é o banco **em memória**: ele existe enquanto a 
-# conexão existir e desaparece ao final. Nenhum arquivo é criado, e o banco de 
-# trabalho em `todo_list.db` não é tocado pela suíte. 
-os.environ["DATABASE_URL"] = "sqlite://" 
-  
-# A aplicação exige um segredo de token para subir. Valor fixo e previsível, 
-# para que as falhas sejam reproduzíveis. Não é o segredo da aplicação — a 
-# configuração real vem do `.env`, que a suíte deixa de precisar. 
-os.environ["JWT_SECRET"] = "segredo-de-teste-nao-usar-em-producao" 
-  
-import pytest  # noqa: E402 
+import os
 
-from app.security import HashBcrypt  # noqa: E402 
-  
+os.environ["DATABASE_URL"] = "sqlite://"
+os.environ["JWT_SECRET"] = "segredo-de-teste-nao-usar-em-producao"
+
+import pytest
+from fastapi.testclient import TestClient
+
+from app.dependencies import obter_hasher
+from app.main import app
+from app.security import HashBcrypt, HashDeSenha  
   
 # ============================================================================= 
 # Dia 4 — a primeira fixture compartilhada 
@@ -68,4 +52,44 @@ def banco_limpo():
     yield 
     #Base.metadata.drop_all(bind=engine)
     
-    
+    # =============================================================================
+# Dia 7 — HTTP: o dublê e o cliente
+# =============================================================================
+class HashFake(HashDeSenha):
+
+    def gerar(self, senha: str) -> str:
+        return f"fake${senha}"
+
+    def verificar(self, senha: str, hash_armazenado: str) -> bool:
+        return hash_armazenado == self.gerar(senha)
+
+
+@pytest.fixture
+def cliente(banco_limpo) -> TestClient:
+    app.dependency_overrides[obter_hasher] = HashFake
+
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def sessao_aberta(cliente: TestClient) -> dict:
+    resposta = cliente.post(
+        "/usuarios",
+        json={
+            "nome": "Ana Souza",
+            "email": "ana@exemplo.com",
+            "senha": "senha123"
+        },
+    )
+
+    assert resposta.status_code == 201, resposta.text
+
+    return resposta.json()
+
+
+@pytest.fixture
+def usuario(sessao_aberta: dict) -> dict:
+    return sessao_aberta["usuario"]
