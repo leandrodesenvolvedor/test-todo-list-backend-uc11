@@ -173,7 +173,7 @@ class Configuracao:
         database_url = os.getenv("DATABASE_URL", "").strip()
 
         if not database_url:
-            raise RuntimeError(
+              raise RuntimeError(
         "A variável de ambiente DATABASE_URL não foi definida.\n"
         f"Esperado um arquivo .env em: {CAMINHO_DO_ENV}\n"
         "Configure a URL do banco de dados antes de iniciar a aplicação."

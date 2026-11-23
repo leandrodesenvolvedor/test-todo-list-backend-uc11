@@ -10,7 +10,7 @@ O arquivo nasce com uma função pura (`normalizar_url`), que só precisa de
   
 import pytest 
   
-# ==from app.config import normalizar_url 
+
 from app.config import (
  CAMINHO_DO_ENV,
  ORIGENS_PADRAO,
